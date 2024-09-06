@@ -1,276 +1,380 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const dailyPage = document.getElementById('dailyPage');
-    const summaryPage = document.getElementById('summaryPage');
-    const dailyPageLink = document.getElementById('dailyPageLink');
-    const summaryPageLink = document.getElementById('summaryPageLink');
-    const transactionFormModal = document.getElementById('transactionFormModal');
-    const addTransactionBtn = document.getElementById('addTransactionBtn');
-    const closeBtn = document.querySelector('.close-btn');
-    const transactionForm = document.getElementById('transactionForm');
-    const transactionList = document.getElementById('transactionList');
-    const totalAmountDisplay = document.getElementById('totalAmount');
-    const summaryList = document.getElementById('summaryList');
-    const clearTransactionsButton = document.getElementById('clearTransactions');
-    const clearSummaryButton = document.getElementById('clearSummary');
+document.addEventListener("DOMContentLoaded", function () {
+    const transactionForm = document.getElementById("transaction-form");
+    const transactionTableBody = document.getElementById("transactions-table-body");
+    const totalRemainingElement = document.getElementById("total-remaining");
+    const monthlyExpensesTableBody = document.getElementById("monthly-expenses-table-body");
+    const monthlyIncomeTableBody = document.getElementById("monthly-income-table-body");
+    const totalMonthlyExpensesElement = document.getElementById("total-monthly-expenses");
+    const totalMonthlyIncomeElement = document.getElementById("total-monthly-income");
+    const monthlySummaryOverview = document.getElementById("monthly-summary-overview");
 
-    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-    let summary = JSON.parse(localStorage.getItem('summary')) || {};
+    const oweToTableBody = document.getElementById("owe-to-table-body");
+    const owedByTableBody = document.getElementById("owed-by-table-body");
+    const debtForm = document.getElementById("debt-form");
 
-    // Ensure stored values are always numbers when retrieving from localStorage
-    const parseTransactions = (transactions) => transactions.map((t) => ({
-        ...t,
-        amount: parseFloat(t.amount), // Ensure amount is stored as a number
-    }));
+    const sections = document.querySelectorAll(".section");
+    const navHome = document.getElementById("nav-home");
+    const navMonthlySummary = document.getElementById("nav-monthly-summary");
+    const navDebt = document.getElementById("nav-debt");
 
-    const parseSummary = (summary) => {
-        for (const key in summary) {
-            summary[key].income = parseFloat(summary[key].income);
-            summary[key].expenses = parseFloat(summary[key].expenses);
-            summary[key].remaining = parseFloat(summary[key].remaining);
-        }
-        return summary;
-    };
+    let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+    let debts = JSON.parse(localStorage.getItem("debts")) || [];
 
-    transactions = parseTransactions(transactions);
-    summary = parseSummary(summary);
-
-    // Navigation between pages
-    dailyPageLink.addEventListener('click', () => {
-        showPage(dailyPage);
-        setActiveLink(dailyPageLink);
+    // Add transaction button event
+    document.getElementById("add-transaction-btn").addEventListener("click", () => {
+        transactionForm.classList.toggle("hidden");
     });
 
-    summaryPageLink.addEventListener('click', () => {
-        showPage(summaryPage);
-        setActiveLink(summaryPageLink);
-        displaySummary();
-    });
+    // Navigation logic
+    navHome.addEventListener("click", () => showSection("home"));
+    navMonthlySummary.addEventListener("click", () => showSection("monthly-summary"));
+    navDebt.addEventListener("click", () => showSection("debt"));
 
-    const showPage = (page) => {
-        // Hide both pages
-        dailyPage.style.display = 'none';
-        summaryPage.style.display = 'none';
+    function showSection(sectionId) {
+        sections.forEach(section => {
+            if (section.id === sectionId) {
+                section.classList.add("active");
+                section.classList.remove("hidden");
+            } else {
+                section.classList.remove("active");
+                section.classList.add("hidden");
+            }
+        });
+    }
 
-        // Show the selected page
-        page.style.display = 'block';
-    };
+    // Form submission for daily transactions
+    transactionForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("name").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const type = document.querySelector('input[name="type"]:checked').value;
+        const date = new Date();
 
-    const setActiveLink = (link) => {
-        // Remove active class from all nav links
-        dailyPageLink.classList.remove('active');
-        summaryPageLink.classList.remove('active');
-
-        // Add active class to the clicked link
-        link.classList.add('active');
-    };
-
-    // Show modal for adding a transaction
-    addTransactionBtn.addEventListener('click', () => {
-        transactionFormModal.style.display = 'flex';
-    });
-
-    // Close modal
-    closeBtn.addEventListener('click', () => {
-        transactionFormModal.style.display = 'none';
-    });
-
-    // Add new transaction
-    const addTransaction = (name, amount, type) => {
-        const now = new Date();
-        const dateTime = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
         const transaction = {
             id: Date.now(),
-            dateTime,
+            date: date.toLocaleString(),
+            month: date.getMonth(),
+            year: date.getFullYear(),
             name,
-            amount: parseFloat(amount), // Store amount as a number
+            amount,
             type
         };
         transactions.push(transaction);
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        displayTransactions();
-        updateSummary();
-    };
+        localStorage.setItem("transactions", JSON.stringify(transactions));
 
-    // Display transactions
-    const displayTransactions = () => {
-        transactionList.innerHTML = '';
-        if (transactions.length === 0) {
-            const tr = document.createElement('tr');
-            const td = document.createElement('td');
-            td.colSpan = 5;
-            td.textContent = 'No transactions available.';
-            tr.appendChild(td);
-            transactionList.appendChild(tr);
-            updateTotalRemainingMoney(0); // Ensure total is reset when there are no transactions
-            return;
+        refreshTables();
+        transactionForm.reset();
+        transactionForm.classList.add("hidden");
+    });
+
+    // Form submission for debts
+    debtForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("debt-name").value;
+        const amount = parseFloat(document.getElementById("debt-amount").value);
+        const type = document.querySelector('input[name="debt-type"]:checked').value;
+
+        const debt = {
+            id: Date.now(),
+            name,
+            amount,
+            type
+        };
+
+        debts.push(debt);
+        localStorage.setItem("debts", JSON.stringify(debts));
+
+        refreshDebtTables(); // Refresh debt tables after adding the debt
+        debtForm.reset();
+    });
+
+    // Function to refresh all transaction tables
+    function refreshTables() {
+        transactionTableBody.innerHTML = '';
+        monthlyExpensesTableBody.innerHTML = '';
+        monthlyIncomeTableBody.innerHTML = '';
+        monthlySummaryOverview.innerHTML = '';
+
+        updateTotalRemaining();
+        updateMonthlySummary();
+        transactions.forEach(addTransactionToHomeTable);
+    }
+
+    // Function to refresh all debt tables
+    function refreshDebtTables() {
+        oweToTableBody.innerHTML = '';
+        owedByTableBody.innerHTML = '';
+
+        debts.forEach(addDebtToTable);
+    }
+
+    function addTransactionToHomeTable(transaction) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${transaction.date}</td>
+            <td>${transaction.name}</td>
+            <td>${transaction.amount}</td>
+            <td>${transaction.type}</td>
+            <td><button class="delete-btn">X</button></td>
+        `;
+        transactionTableBody.appendChild(row);
+
+        // Add event listener for delete button
+        row.querySelector(".delete-btn").addEventListener("click", () => {
+            deleteTransaction(transaction.id);
+        });
+    }
+
+    function addDebtToTable(debt) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${debt.name}</td>
+            <td>${debt.amount}</td>
+            <td><button class="delete-btn">X</button></td>
+        `;
+
+        if (debt.type === "owe-to") {
+            oweToTableBody.appendChild(row);
+        } else if (debt.type === "owed-by") {
+            owedByTableBody.appendChild(row);
         }
 
-        let totalAmount = 0;
+        // Add event listener for delete button
+        row.querySelector(".delete-btn").addEventListener("click", () => {
+            deleteDebt(debt.id);
+        });
+    }
+
+    function deleteTransaction(transactionId) {
+        transactions = transactions.filter(transaction => transaction.id !== transactionId);
+        localStorage.setItem("transactions", JSON.stringify(transactions));
+        refreshTables(); // Refresh all tables after deletion
+    }
+
+    function deleteDebt(debtId) {
+        debts = debts.filter(debt => debt.id !== debtId);
+        localStorage.setItem("debts", JSON.stringify(debts));
+        refreshDebtTables(); // Refresh debt tables after deletion
+    }
+
+    // Function to calculate and update total remaining
+    function updateTotalRemaining() {
+        const total = transactions.reduce((acc, transaction) => {
+            return transaction.type === "income" ? acc + transaction.amount : acc - transaction.amount;
+        }, 0);
+        totalRemainingElement.textContent = total.toFixed(2);
+    }
+
+    // Monthly summary update
+    function updateMonthlySummary() {
+        const monthlySummary = {};
+
         transactions.forEach(transaction => {
-            const tr = document.createElement('tr');
-            const dateTd = document.createElement('td');
-            const nameTd = document.createElement('td');
-            const amountTd = document.createElement('td');
-            const typeTd = document.createElement('td');
-            const deleteTd = document.createElement('td');
+            const monthYear = `${transaction.month}-${transaction.year}`;
 
-            dateTd.textContent = transaction.dateTime;
-            nameTd.textContent = transaction.name;
-            amountTd.textContent = Math.abs(transaction.amount).toFixed(2); // Ensure display as a number
-            typeTd.textContent = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
-
-            // Adjust total based on income or expense
-            if (transaction.type === 'income') {
-                totalAmount += transaction.amount; // Add income
-            } else if (transaction.type === 'expense') {
-                totalAmount -= transaction.amount; // Subtract expense
+            if (!monthlySummary[monthYear]) {
+                monthlySummary[monthYear] = {
+                    totalIncome: 0,
+                    totalExpenses: 0,
+                    remainingAmount: 0
+                };
             }
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'X';
-            deleteBtn.classList.add('delete-btn');
-            deleteBtn.addEventListener('click', () => {
-                deleteTransaction(transaction.id);
-            });
-            deleteTd.appendChild(deleteBtn);
+            if (transaction.type === "income") {
+                monthlySummary[monthYear].totalIncome += transaction.amount;
+            } else if (transaction.type === "expense") {
+                monthlySummary[monthYear].totalExpenses += transaction.amount;
+            }
 
-            tr.appendChild(dateTd);
-            tr.appendChild(nameTd);
-            tr.appendChild(amountTd);
-            tr.appendChild(typeTd);
-            tr.appendChild(deleteTd);
-            transactionList.appendChild(tr);
+            monthlySummary[monthYear].remainingAmount = 
+                monthlySummary[monthYear].totalIncome - monthlySummary[monthYear].totalExpenses;
         });
 
-        // Display total remaining money immediately
-        updateTotalRemainingMoney(totalAmount);
-    };
+        monthlySummaryOverview.innerHTML = '';
+        monthlyExpensesTableBody.innerHTML = '';
+        monthlyIncomeTableBody.innerHTML = '';
 
-    // Update total remaining money in the table footer
-    const updateTotalRemainingMoney = (totalAmount) => {
-        totalAmountDisplay.textContent = totalAmount.toFixed(2); // Ensure display as a number
-    };
+        Object.keys(monthlySummary).forEach(monthYear => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${monthYear}</td>
+                <td>${monthlySummary[monthYear].totalIncome.toFixed(2)}</td>
+                <td>${monthlySummary[monthYear].totalExpenses.toFixed(2)}</td>
+                <td>${monthlySummary[monthYear].remainingAmount.toFixed(2)}</td>
+            `;
+            monthlySummaryOverview.appendChild(row);
+        });
 
-    // Delete transaction
-    const deleteTransaction = (id) => {
-        transactions = transactions.filter(transaction => transaction.id !== id);
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        displayTransactions();
-        updateSummary();
-    };
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
 
-    // Update summary
-    const updateSummary = () => {
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
-        const income = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const expenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + Math.abs(t.amount), 0);
-        const remaining = income - expenses;
+        transactions.forEach(transaction => {
+            if (transaction.month === currentMonth && transaction.year === currentYear) {
+                if (transaction.type === "income") {
+                    addTransactionToMonthlyTable(transaction, "income");
+                } else if (transaction.type === "expense") {
+                    addTransactionToMonthlyTable(transaction, "expense");
+                }
+            }
+        });
 
-        summary[currentMonth] = {
-            income: parseFloat(income.toFixed(2)), // Ensure stored as number
-            expenses: parseFloat(expenses.toFixed(2)), // Ensure stored as number
-            remaining: parseFloat(remaining.toFixed(2)) // Ensure stored as number
-        };
+        updateMonthlyTotals();
+    }
 
-        localStorage.setItem('summary', JSON.stringify(summary));
-        displaySummary();
-    };
+    function addTransactionToMonthlyTable(transaction, type) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${transaction.date}</td>
+            <td>${transaction.name}</td>
+            <td>${transaction.amount}</td>
+            <td><button class="delete-btn">X</button></td>
+        `;
 
-     // Clear All Data Button
-     const clearLocalStorageBtn = document.getElementById('clearLocalStorage');
-
-     // Event Listener for Clear All Data
-     clearLocalStorageBtn.addEventListener('click', () => {
-         localStorage.clear(); // Clear all localStorage data
-         alert("All data has been cleared!");
-         location.reload(); // Reload the page to reset the app
-     });
- 
-    // Display summary with delete buttons
-    const displaySummary = () => {
-        summaryList.innerHTML = '';
-        for (const month in summary) {
-            const tr = document.createElement('tr');
-            const monthTd = document.createElement('td');
-            const incomeTd = document.createElement('td');
-            const expensesTd = document.createElement('td');
-            const remainingTd = document.createElement('td');
-            const deleteTd = document.createElement('td');
-
-            monthTd.textContent = month;
-            incomeTd.textContent = `₹${summary[month].income}`;
-            expensesTd.textContent = `₹${summary[month].expenses}`;
-            remainingTd.textContent = `₹${summary[month].remaining}`;
-
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'X';
-            deleteBtn.classList.add('delete-btn');
-            deleteBtn.addEventListener('click', () => {
-                deleteMonthSummary(month);
-            });
-            deleteTd.appendChild(deleteBtn);
-
-            tr.appendChild(monthTd);
-            tr.appendChild(incomeTd);
-            tr.appendChild(expensesTd);
-            tr.appendChild(remainingTd);
-            tr.appendChild(deleteTd);
-            summaryList.appendChild(tr);
+        if (type === "income") {
+            monthlyIncomeTableBody.appendChild(row);
+        } else if (type === "expense") {
+            monthlyExpensesTableBody.appendChild(row);
         }
-    };
 
-    // Delete month summary
-    const deleteMonthSummary = (month) => {
-        delete summary[month]; // Remove the month from the summary object
-        localStorage.setItem('summary', JSON.stringify(summary)); // Update localStorage
-        displaySummary(); // Refresh the summary table
-    };
+        row.querySelector(".delete-btn").addEventListener("click", () => {
+            deleteTransaction(transaction.id);
+        });
+    }
 
-    // Handle form submission
-    transactionForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('transactionName').value;
-        const amount = parseFloat(document.getElementById('transactionAmount').value); // Ensure value as number
-        const type = document.querySelector('input[name="transactionType"]:checked').value;
+    function updateMonthlyTotals() {
+        const totalIncome = Array.from(monthlyIncomeTableBody.querySelectorAll('tr')).reduce((acc, row) => {
+            const amount = parseFloat(row.cells[2].textContent);
+            return acc + amount;
+        }, 0);
 
-        if (name && !isNaN(amount)) {
-            addTransaction(name, amount, type);
-            transactionForm.reset();
-            transactionFormModal.style.display = 'none';
+        const totalExpenses = Array.from(monthlyExpensesTableBody.querySelectorAll('tr')).reduce((acc, row) => {
+            const amount = parseFloat(row.cells[2].textContent);
+            return acc + amount;
+        }, 0);
+
+        totalMonthlyIncomeElement.textContent = totalIncome.toFixed(2);
+        totalMonthlyExpensesElement.textContent = totalExpenses.toFixed(2);
+    }
+
+    // Add download functionality for Excel and PDF based on user choice
+    document.getElementById("download-home-data").addEventListener("click", () => {
+        promptDownload('home');
+    });
+
+    document.getElementById("download-monthly-data").addEventListener("click", () => {
+        promptDownload('monthly-summary');
+    });
+
+    document.getElementById("download-debt-data").addEventListener("click", () => {
+        promptDownload('debt');
+    });
+
+    function promptDownload(sectionId) {
+        const choice = prompt("Which format would you like to download? (pdf/excel/both)");
+
+        if (choice === 'pdf') {
+            downloadPDF(sectionId);
+        } else if (choice === 'excel') {
+            downloadExcel(sectionId);
+        } else if (choice === 'both') {
+            downloadPDF(sectionId);
+            downloadExcel(sectionId);
+        } else {
+            alert("Invalid choice. Please enter 'pdf', 'excel', or 'both'.");
         }
-    });
+    }
 
-    // Clear all transactions and update summary for the current month
-    clearTransactionsButton.addEventListener('click', () => {
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    function downloadPDF(sectionId) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
 
-        // Clear all transactions
-        transactions = [];
-        localStorage.removeItem('transactions');
-        displayTransactions(); // Refresh transaction list immediately
-        updateTotalRemainingMoney(0); // Reset total remaining money
+        let sectionTitle = '';
+        let tableBody = [];
 
-        // Update summary for the current month to 0 values
-        summary[currentMonth] = {
-            income: 0.00,
-            expenses: 0.00,
-            remaining: 0.00
-        };
-        localStorage.setItem('summary', JSON.stringify(summary));
-        displaySummary(); // Refresh the summary immediately
-    });
+        switch (sectionId) {
+            case 'home':
+                sectionTitle = 'Daily Transactions';
+                tableBody = [...document.querySelectorAll("#transactions-table-body tr")].map(row => {
+                    return [...row.cells].map(cell => cell.textContent);
+                });
+                doc.autoTable({
+                    head: [['Date & Time', 'Name', 'Amount', 'Type', 'Action']],
+                    body: tableBody,
+                });
+                break;
+            case 'monthly-summary':
+                sectionTitle = 'Monthly Summary';
+                tableBody = [...document.querySelectorAll("#monthly-summary-overview tr")].map(row => {
+                    return [...row.cells].map(cell => cell.textContent);
+                });
+                doc.autoTable({
+                    head: [['Month', 'Total Income', 'Total Expenses', 'Remaining Amount']],
+                    body: tableBody,
+                });
+                break;
+            case 'debt':
+                sectionTitle = 'Debt Overview';
+                tableBody = [...document.querySelectorAll("#owe-to-table-body tr, #owed-by-table-body tr")].map(row => {
+                    return [...row.cells].map(cell => cell.textContent);
+                });
+                doc.autoTable({
+                    head: [['Name', 'Amount', 'Action']],
+                    body: tableBody,
+                });
+                break;
+        }
 
-    // Clear all summary
-    clearSummaryButton.addEventListener('click', () => {
-        summary = {};
-        localStorage.removeItem('summary');
-        displaySummary();
-    });
+        doc.text(sectionTitle, 15, 10);
+        doc.save(`${sectionId}-data.pdf`);
+    }
 
-    // Load initial data
-    displayTransactions();
-    displaySummary();
+    function downloadExcel(sectionId) {
+        let data = [];
+        let worksheetName = '';
+        let fileName = '';
 
-    // Initially only show Daily Transactions page
-    showPage(dailyPage);
+        switch (sectionId) {
+            case 'home':
+                worksheetName = 'Daily Transactions';
+                fileName = 'daily_transactions.xlsx';
+                data = transactions.map(transaction => ({
+                    'Date & Time': transaction.date,
+                    'Name': transaction.name,
+                    'Amount': transaction.amount,
+                    'Type': transaction.type
+                }));
+                break;
+
+            case 'monthly-summary':
+                worksheetName = 'Monthly Summary';
+                fileName = 'monthly_summary.xlsx';
+                data = transactions.map(transaction => ({
+                    'Month': `${transaction.month + 1}-${transaction.year}`,
+                    'Name': transaction.name,
+                    'Amount': transaction.amount,
+                    'Type': transaction.type
+                }));
+                break;
+
+            case 'debt':
+                worksheetName = 'Debt Data';
+                fileName = 'debt_data.xlsx';
+                data = debts.map(debt => ({
+                    'Name': debt.name,
+                    'Amount': debt.amount,
+                    'Type': debt.type === 'owe-to' ? 'Owe to Someone' : 'Owed by Someone'
+                }));
+                break;
+        }
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, worksheetName);
+
+        XLSX.writeFile(wb, fileName);
+    }
+
+    // Load transactions and debts from localStorage on page load
+    refreshTables();
+    refreshDebtTables();
 });
