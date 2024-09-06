@@ -21,15 +21,6 @@ document.addEventListener('DOMContentLoaded', () => {
         ...t,
         amount: parseFloat(t.amount), // Ensure amount is stored as a number
     }));
-    // Clear All Data Button
-    const clearLocalStorageBtn = document.getElementById('clearLocalStorage');
-
-    // Event Listener for Clear All Data
-    clearLocalStorageBtn.addEventListener('click', () => {
-        localStorage.clear(); // Clear all localStorage data
-        alert("All data has been cleared!");
-        location.reload(); // Reload the page to reset the app
-    });
 
     const parseSummary = (summary) => {
         for (const key in summary) {
@@ -83,7 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
         transactionFormModal.style.display = 'none';
     });
 
-    
     // Add new transaction
     const addTransaction = (name, amount, type) => {
         const now = new Date();
@@ -129,7 +119,12 @@ document.addEventListener('DOMContentLoaded', () => {
             amountTd.textContent = Math.abs(transaction.amount).toFixed(2); // Ensure display as a number
             typeTd.textContent = transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1);
 
-            totalAmount += transaction.amount;
+            // Adjust total based on income or expense
+            if (transaction.type === 'income') {
+                totalAmount += transaction.amount; // Add income
+            } else if (transaction.type === 'expense') {
+                totalAmount -= transaction.amount; // Subtract expense
+            }
 
             const deleteBtn = document.createElement('button');
             deleteBtn.textContent = 'X';
@@ -181,6 +176,16 @@ document.addEventListener('DOMContentLoaded', () => {
         displaySummary();
     };
 
+     // Clear All Data Button
+     const clearLocalStorageBtn = document.getElementById('clearLocalStorage');
+
+     // Event Listener for Clear All Data
+     clearLocalStorageBtn.addEventListener('click', () => {
+         localStorage.clear(); // Clear all localStorage data
+         alert("All data has been cleared!");
+         location.reload(); // Reload the page to reset the app
+     });
+ 
     // Display summary with delete buttons
     const displaySummary = () => {
         summaryList.innerHTML = '';
