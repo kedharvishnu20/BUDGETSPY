@@ -1,96 +1,173 @@
-/* General Styles */
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* Global Styles */
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+    background-color: #f4f7f9;
+    color: #2c3e50;
     padding: 20px;
 }
 
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    background: #fff;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* Logo and Header Section */
-.logo-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-.logo-header h1 {
-    font-size: 2.4rem;
-    color: #3498db;
-    margin-left: 15px;
-}
-
-.logo {
-    width: 80px; /* Adjust as needed */
-    height: 80px;
-    border-radius: 50%; /* Circular shape */
-}
-
-/* Navigation */
-nav {
+h1, h2, h3 {
+    font-weight: 600;
     text-align: center;
     margin-bottom: 20px;
 }
 
-nav a {
-    text-decoration: none;
-    color: #3498db;
-    margin: 0 10px;
-    font-weight: bold;
-    padding: 12px 25px;
-    border-radius: 8px;
-    transition: background-color 0.3s ease-in-out;
-}
-
-nav a:hover {
-    background-color: #eaf4fc;
-}
-
-nav a.active {
-    background-color: #3498db;
+header {
+    background-color: #1abc9c;
     color: white;
+    padding: 20px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Rest of your CSS remains the same */
+header h1 {
+    font-size: 2.5em;
+    letter-spacing: 1px;
+}
 
-
-/* Add Button */
-.add-btn {
+nav ul {
+    list-style: none;
     display: flex;
-    justify-content: center;  /* Horizontally center the content */
-    align-items: center;      /* Vertically center the content */
-    font-size: 2.2rem;
-    color: white;
-    background-color: #3498db;
-    border: none;
-    border-radius: 50%;       /* Circular shape */
-    width: 55px;
-    height: 55px;
-    cursor: pointer;
-    display: block;
-    margin: 20px auto;
-    transition: background-color 0.3s ease-in-out;
+    justify-content: center;
+    margin-top: 10px;
 }
 
-.add-btn:hover {
+nav ul li {
+    margin: 0 15px;
+}
+
+nav ul li a {
+    color: white;
+    font-size: 1.2em;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+    color: #16a085;
+}
+
+/* Section Styling */
+.section {
+    margin: 40px 0;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.section.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Monthly Summary Section Background and Spacing */
+#monthly-summary {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+#monthly-summary h3 {
+    margin-top: 40px;
+    background-color: #bdc3c7;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+/* Form Styling */
+form {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+form input[type="text"], form input[type="number"], form input[type="date"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 1em;
+}
+
+form div {
+    margin-bottom: 20px;
+}
+
+form input[type="radio"] {
+    margin-right: 10px;
+}
+
+form label {
+    font-size: 1em;
+    margin-right: 20px;
+}
+
+form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #1abc9c;
+    color: white;
+    border: none;
+    font-size: 1.1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #16a085;
+}
+
+/* Button Styling */
+button {
+    padding: 12px 20px;
+    background-color: #1abc9c;
+    color: white;
+    border: none;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+button:hover {
+    background-color: #16a085;
+}
+
+/* Download Button */
+.download-btn {
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+}
+
+.download-btn:hover {
     background-color: #2980b9;
 }
 
+.hidden {
+    display: none;
+}
 
 /* Table Styles */
 table {
@@ -114,139 +191,6 @@ tfoot {
     font-weight: bold;
 }
 
-/* Buttons */
-button {
-    width: 100%;
-    padding: 14px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-}
-
-button:hover {
-    background-color: #2980b9;
-}
-
-.delete-btn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-}
-
-.delete-btn:hover {
-    background-color: #c0392b;
-}
-
-/* Modal Styles */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 35px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative;
-    text-align: left;
-}
-
-.modal-content h3 {
-    color: #3498db;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.close-btn {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 1.5rem;
-    color: #333;
-    cursor: pointer;
-    transition: color 0.3s;
-}
-
-.close-btn:hover {
-    color: #e74c3c;
-}
-
-.modal-content form label {
-    display: block;
-    margin-bottom: 10px;
-    font-size: 1.1rem;
-    font-weight: 600;
-}
-
-.modal-content form input[type="text"],
-.modal-content form input[type="number"],
-.modal-content form input[type="date"] {
-    width: 100%;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    transition: border-color 0.3s;
-}
-
-.modal-content form input[type="text"]:focus,
-.modal-content form input[type="number"]:focus,
-.modal-content form input[type="date"]:focus {
-    border-color: #3498db;
-    outline: none;
-}
-
-.modal-content form .radio-group {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.radio-group label {
-    font-size: 1.1rem;
-}
-
-.radio-group input {
-    margin-right: 5px;
-}
-
-.modal-content button[type="submit"] {
-    width: 100%;
-    padding: 14px 0;
-    background-color: #3498db;
-    color: white;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.modal-content button[type="submit"]:hover {
-    background-color: #2980b9;
-}
-
 /* Responsive Design for Mobile (max-width: 600px) */
 @media (max-width: 600px) {
     body {
@@ -257,32 +201,12 @@ button:hover {
         padding: 20px;
     }
 
-    #dailyPageLink,#summaryPageLink{
-        font-size: 12px;
-    }
-
     h1 {
         font-size: 1.8rem;
     }
 
-    .navigator{
-        padding: 8px;
-    }
-
-    .logo {
-        width: 60px;
-        height: 60px;
-    }
-
     nav a {
-        padding: 8px 15px;
         font-size: 0.9rem;
-    }
-
-    .add-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.8rem;
     }
 
     table, th, td {
@@ -296,53 +220,22 @@ button:hover {
     }
 }
 
-/* Responsive Design for Laptops (1024px - 1440px) */
-@media (min-width: 1024px) and (max-width: 1440px) {
-    .container {
-        padding: 40px;
-    }
-
-    h1, h2 {
-        font-size: 2.5rem;
-    }
-
-    nav a {
-        font-size: 1.2rem;
-        padding: 15px 30px;
-    }
-   
-    .add-btn {
-        width: 60px;
-        height: 60px;
-    }
-
-    table, th, td {
-        font-size: 1.2rem;
-        padding: 15px;
-    }
-
-    .modal-content {
-        padding: 40px;
-    }
-
-    button {
-        padding: 15px;
-    }
+/* Logo and Header Section */
+.logo-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
 }
 
-/* Small Clear All Data Button */
-.small-clear-btn {
-    width: auto;
-    height:10%;
-    font-size: 4%;
-    background-color: #e74c3c;
+.logo-header h1 {
+    font-size: 2.5em;
     color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
+    margin-left: 15px;
 }
 
-.small-clear-btn:hover {
-    background-color: #c0392b;
+.logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
 }
