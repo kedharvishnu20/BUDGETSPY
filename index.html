@@ -4,93 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget Spy</title>
-    <link rel="icon" type="image/png" href="logo3.webp">
     <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="logo3.webp" type="image/webp"> <!-- Tab Logo Added -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    
-    <div class="container">
-        <!-- Logo Section -->
+    <header>
         <div class="logo-header">
-            <img src="logo3.webp" alt="Budget Spy Logo" class="logo">
+            <img src="logo3.webp" alt="Logo" class="logo">
             <h1>Budget Spy</h1>
         </div>
-        <button id="clearLocalStorage" class="small-clear-btn">Clear All Data</button>
-        <br>
-        <nav class="navigator">
-            <a href="#" id="dailyPageLink" class="active">Daily Transactions</a>
-            <a href="#" id="summaryPageLink">Monthly Summary</a>
+        <nav>
+            <ul>
+                <li><a href="#" id="nav-home">Home</a></li>
+                <li><a href="#" id="nav-monthly-summary">Monthly Summary</a></li>
+                <li><a href="#" id="nav-debt">Debt</a></li>
+            </ul>
         </nav>
+    </header>
 
-        <!-- Daily Transactions Page -->
-        <section id="dailyPage" class="page">
-            <h2>Daily Transactions</h2>
-            <button id="addTransactionBtn" class="add-btn">+</button>
-            
-            <div id="transactionFormModal" class="modal">
-                <div class="modal-content">
-                    <span class="close-btn">&times;</span>
-                    <h3>Add Transaction</h3>
-                    <form id="transactionForm">
-                        <label for="transactionName">Transaction Name:</label>
-                        <input type="text" id="transactionName" placeholder="Enter transaction name" required>
-
-                        <label for="transactionAmount">Amount:</label>
-                        <input type="number" id="transactionAmount" placeholder="Enter amount" required>
-
-                        <label>Transaction Type:</label>
-                        <div>
-                            <input type="radio" id="income" name="transactionType" value="income" checked>
-                            <label for="income">Income</label>
-                            <input type="radio" id="expense" name="transactionType" value="expense">
-                            <label for="expense">Expense</label>
-                        </div>
-
-                        <button type="submit">Add Transaction</button>
-                    </form>
-                </div>
+    <!-- Home Page: Daily Transactions -->
+    <section id="home" class="section active">
+        <h2>Daily Transactions</h2>
+        <button id="add-transaction-btn">Add Transaction</button>
+        <button id="download-home-data" class="download-btn">Download Transactions</button>
+        <form id="transaction-form" class="hidden">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="number" id="amount" placeholder="Amount" required>
+            <div>
+                <input type="radio" id="income" name="type" value="income" required>
+                <label for="income">Income</label>
+                <input type="radio" id="expense" name="type" value="expense" required>
+                <label for="expense">Expense</label>
             </div>
+            <button type="submit">Submit</button>
+        </form>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="transactions-table-body"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Total Remaining Amount</td>
+                    <td id="total-remaining">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
 
-            <table id="transactionTable">
-                <thead>
-                    <tr>
-                        <th>Date & Time</th>
-                        <th>Name</th>
-                        <th>Amount</th>
-                        <th>Type</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="transactionList"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="4"><strong>Total Remaining Money</strong></td>
-                        <td id="totalAmount">0</td>
-                    </tr>
-                </tfoot>
-            </table>
+    <!-- Monthly Summary -->
+    <section id="monthly-summary" class="section hidden">
+        <h2>Monthly Summary</h2>
+        <button id="download-monthly-data" class="download-btn">Download Monthly Summary</button>
 
-            <button id="clearTransactions">Clear Transactions</button>
-        </section>
+        <h3>Overall Monthly Summary</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Total Income</th>
+                    <th>Total Expenses</th>
+                    <th>Remaining Amount</th>
+                </tr>
+            </thead>
+            <tbody id="monthly-summary-overview"></tbody>
+        </table>
 
-        <!-- Monthly Summary Page -->
-        <section id="summaryPage" class="page">
-            <h2>Monthly Summary</h2>
-            <table id="summaryTable">
-                <thead>
-                    <tr>
-                        <th>Month</th>
-                        <th>Total Income</th>
-                        <th>Total Expenses</th>
-                        <th>Remaining Balance</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="summaryList"></tbody>
-            </table>
-            <button id="clearSummary">Clear Summary</button>
-        </section>
-    </div>
+        <h3>Expenses</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="monthly-expenses-table-body"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">Total Expenses</td>
+                    <td id="total-monthly-expenses">0</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <h3>Income</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date & Time</th>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="monthly-income-table-body"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3">Total Income</td>
+                    <td id="total-monthly-income">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <!-- Debt Section -->
+    <section id="debt" class="section hidden">
+        <h2>Debt</h2>
+        <button id="download-debt-data" class="download-btn">Download Debt Data</button>
+
+        <form id="debt-form">
+            <input type="text" id="debt-name" placeholder="Name" required>
+            <input type="number" id="debt-amount" placeholder="Amount" required>
+            <div>
+                <input type="radio" id="owe-to" name="debt-type" value="owe-to" required>
+                <label for="owe-to">Owe to Someone</label>
+                <input type="radio" id="owed-by" name="debt-type" value="owed-by" required>
+                <label for="owed-by">Owed by Someone</label>
+            </div>
+            <button type="submit">Add Debt</button>
+        </form>
+
+        <h3>Owe to Someone</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="owe-to-table-body"></tbody>
+        </table>
+
+        <h3>Owed by Someone</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="owed-by-table-body"></tbody>
+        </table>
+    </section>
 
     <script src="script.js"></script>
 </body>
