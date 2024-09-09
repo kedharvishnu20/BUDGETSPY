@@ -20,6 +20,16 @@ document.addEventListener("DOMContentLoaded", function () {
     let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
     let debts = JSON.parse(localStorage.getItem("debts")) || [];
 
+    // Helper function to format date in DD/MM/YYYY HH:MM
+    function formatDate(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const year = date.getFullYear();
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
     // Add transaction button event
     document.getElementById("add-transaction-btn").addEventListener("click", () => {
         transactionForm.classList.toggle("hidden");
@@ -49,10 +59,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const amount = parseFloat(document.getElementById("amount").value);
         const type = document.querySelector('input[name="type"]:checked').value;
         const date = new Date();
+        const formattedDate = formatDate(date); // Use formatted date
 
         const transaction = {
             id: Date.now(),
-            date: date.toLocaleString(),
+            date: formattedDate,
             month: date.getMonth(),
             year: date.getFullYear(),
             name,
@@ -168,10 +179,14 @@ document.addEventListener("DOMContentLoaded", function () {
     // Monthly summary update
     function updateMonthlySummary() {
         const monthlySummary = {};
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+        // Iterate through all transactions
         transactions.forEach(transaction => {
-            const monthYear = `${transaction.month}-${transaction.year}`;
+            // Create a key based on the month and year
+            const monthYear = `${monthNames[transaction.month]}-${transaction.year}`;
 
+            // Initialize the object for this month if it doesn't exist
             if (!monthlySummary[monthYear]) {
                 monthlySummary[monthYear] = {
                     totalIncome: 0,
@@ -180,20 +195,24 @@ document.addEventListener("DOMContentLoaded", function () {
                 };
             }
 
+            // Add income or expense to the appropriate field
             if (transaction.type === "income") {
                 monthlySummary[monthYear].totalIncome += transaction.amount;
             } else if (transaction.type === "expense") {
                 monthlySummary[monthYear].totalExpenses += transaction.amount;
             }
 
+            // Calculate the remaining amount for the month
             monthlySummary[monthYear].remainingAmount = 
                 monthlySummary[monthYear].totalIncome - monthlySummary[monthYear].totalExpenses;
         });
 
+        // Clear the existing content in the monthly summary table
         monthlySummaryOverview.innerHTML = '';
         monthlyExpensesTableBody.innerHTML = '';
         monthlyIncomeTableBody.innerHTML = '';
 
+        // Loop over the monthlySummary object and update the overall monthly summary table
         Object.keys(monthlySummary).forEach(monthYear => {
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -205,6 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
             monthlySummaryOverview.appendChild(row);
         });
 
+        // Update the current month's income and expenses table
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
 
@@ -218,6 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
+        // Update totals for the current month
         updateMonthlyTotals();
     }
 
